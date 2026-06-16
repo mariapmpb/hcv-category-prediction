@@ -10,6 +10,7 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.preprocessing import LabelEncoder
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score, classification_report
+import seaborn as sns
 
 def  exploratory_data_analysis(file_path, biomarkers):
     # opening the file
@@ -17,6 +18,11 @@ def  exploratory_data_analysis(file_path, biomarkers):
     
     # droping the first row
     df.drop(df.index[0], inplace=True)
+    
+    int_columns = ['age']
+    df[int_columns] = df[int_columns].astype(int)
+    float_columns = ['alb','alp', 'alt', 'ast', 'bil', 'che', 'chol', 'crea', 'cgt', 'prot']
+    df[float_columns] = df[float_columns].astype(float)
     
     print('\n--------------------------------------------- EXPLORATORY DATA ANALYSIS ---------------------------------------------\n')
     print(f'# Observations and features:\n{df.shape}')
@@ -28,8 +34,48 @@ def  exploratory_data_analysis(file_path, biomarkers):
     print(f'\n# Missing values: \n {df.isnull().sum()}')
     print(f'\n# Duplicated values: {df.duplicated().sum()}')
     print(f'\n# Statistics:\n{df.describe(include='all').T}')
-    print('\n--------------------------------------------- EXPLORATORY DATA ANALYSIS ---------------------------------------------\n')
+    
+    for bm in biomarkers:    
+        print(f'\n---------------------------------------------')
+        print(f'\n# Metrics {bm.upper()} before cleaning outliers: \n {df[bm].describe()}')
+        plt.boxplot(df[bm])
+        plt.show()
+        # all biomarkers has outliers
+    
+    numeric_col = df.select_dtypes(include=['int64', 'float64']).columns
+    numeric_col = numeric_col.drop('id')
+    for c in numeric_col:
+        # histogram for every numeric column
+        df[c].hist(bins=30)
+        plt.title(c)
+        plt.show()
+          
+    corrrelation = df.drop(columns=['id']).corr(numeric_only=True)
+    # heatmap to show the correlation between numeric variables
+    sns.heatmap(corrrelation)
+    plt.show()
+    
+    # boxplot to show the distribution of category within age
+    sns.boxplot(x='category', y='age', data=df)
+    plt.show()
+    
+    categorical_col = df.select_dtypes(include=['object', 'category', 'str']).columns
+    for c in categorical_col:
+        print(f'\n---------------------------------------------')
+        print(f'\nSamples per value of {c}\n{df[c].value_counts()}')
+        value_counts = df[c].value_counts()
         
+        # barplot for every categorical column
+        plt.bar(value_counts.index, value_counts.values, color='skyblue')
+        plt.xlabel(c)
+        plt.ylabel('Number of samples')
+        plt.show()
+        
+    
+    print('\n--------------------------------------------- EXPLORATORY DATA ANALYSIS ---------------------------------------------\n')
+    
+    
+    
     return df
 
 
@@ -66,12 +112,6 @@ def missing_values(df):
 def cleaning_outliers(df, biomarkers):
     # correcting outliers
     for bm in biomarkers:    
-        print(f'\n---------------------------------------------')
-        print(f'\n# Metrics {bm.upper()} before cleaning outliers: \n {df[bm].describe()}')
-        # plt.boxplot(df[bm])
-        # plt.show()
-        # all biomarkers has outliers
-        
         q1 = df[bm].quantile(0.25)
         q3 = df[bm].quantile(0.75)
         iqr = q3 - q1
@@ -120,8 +160,10 @@ def pre_processing(df, biomarkers):
     df = normalizing(df, biomarkers)
     
     print(f'\n> Statistics:\n{df.describe(include='all').T}')
+    
     int_columns = ['id', 'category', 'sex_m']
     df[int_columns] = df[int_columns].astype(int)
+    
     print(df)
     print('\n--------------------------------------------- DATA PRE-PROCESSING ---------------------------------------------')
     
@@ -130,7 +172,7 @@ def pre_processing(df, biomarkers):
     
     
 def data_splitting(df):
-    X = df.drop(columns=['category'])
+    X = df.drop(columns=['category', 'id'])
     y = df['category']
     
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25, random_state=0)
@@ -164,7 +206,7 @@ if __name__ == '__main__':
     file_path = 'hcvdata/hcvdata.csv'
     biomarkers = ['alb', 'alp', 'alt', 'ast', 'bil', 'che', 'chol', 'crea', 'cgt', 'prot']
     initial_dataframe = exploratory_data_analysis(file_path, biomarkers)
-    cleaned_dataframe = pre_processing(initial_dataframe, biomarkers)
-    X_train, X_test, y_train, y_test = data_splitting(cleaned_dataframe)
-    logistic_regression_model(X_train, X_test, y_train, y_test)
-    random_forest_model(X_train, X_test, y_train, y_test)
+    # cleaned_dataframe = pre_processing(initial_dataframe, biomarkers)
+    # X_train, X_test, y_train, y_test = data_splitting(cleaned_dataframe)
+    # logistic_regression_model(X_train, X_test, y_train, y_test)
+    # random_forest_model(X_train, X_test, y_train, y_test)
