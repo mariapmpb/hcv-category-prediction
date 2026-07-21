@@ -7,7 +7,7 @@ Academic project for the Machine Learning course
 
 ## Overview
 
-This project applies supervised machine learning models — **Logistic Regression** and **Random Forest** — to the [HCV Data dataset](https://doi.org/10.24432/C5D612) (UCI Machine Learning Repository), with the goal of classifying individuals into clinical categories (blood donor, suspect blood donor, hepatitis, fibrosis, cirrhosis) based on demographic data (age, sex) and blood biochemical markers.
+This project applies supervised machine learning models  **Logistic Regression** and **Random Forest** to the [HCV Data dataset](https://doi.org/10.24432/C5D612) (UCI Machine Learning Repository), with the goal of classifying individuals into clinical categories (blood donor, suspect blood donor, hepatitis, fibrosis, cirrhosis) based on demographic data (age, sex) and blood biochemical markers.
 
 The pipeline covers three stages:
 1. Exploratory Data Analysis (EDA)
